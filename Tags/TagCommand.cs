@@ -18,6 +18,7 @@ namespace Tags
         {
             return "View tags, create your own, delete, etc.";
         }
+        /*
         public override string[] splitArgs(string arguments)
         {
             var newArgs = new string[3];
@@ -30,9 +31,23 @@ namespace Tags
             if (args.Length > 2)
                 newArgs[2] = arguments.Substring(arg[0].Length + arg[1].Length + arg[2].Length + 3);
             return newArgs;
+        }*/
+
+        public override int getArguments()
+        {
+            return 3;
         }
+
         public override bool Run( Program bot, string[] arguments, MessageWrapper message)
         {
+            if (arguments.Length >= 1)
+            {
+                arguments[0] = arguments[0].ToLower();
+            }
+            if (arguments.Length >= 2)
+            {
+                arguments[1] = arguments[1].ToLower();
+            }
             switch (arguments[0])
             {
                 case "random":
@@ -51,6 +66,7 @@ namespace Tags
                     else
                         TagsModule.database.tags[arguments[1]] = new Tag(message.message.Author.Username, message.message.Author.Discriminator, message.message.Author.Id.ToString(), arguments[2]);
                     message.Channel.SendMessageAsync("Added tag " + arguments[1]);
+                    TagsModule.SaveTags();
                     return true;
 
                 case "edit":
@@ -65,6 +81,7 @@ namespace Tags
                         {
                             TagsModule.database.tags[arguments[1]].content = arguments[2];
                             message.Channel.SendMessageAsync("Edited tag " + arguments[1]);
+                            TagsModule.SaveTags();
                             return true;
                         }
 
@@ -85,6 +102,7 @@ namespace Tags
                         {
                             TagsModule.database.tags.Remove(arguments[1]);
                             message.Channel.SendMessageAsync("Removed tag " + arguments[1]);
+                            TagsModule.SaveTags();
                             return true;
                         }
 

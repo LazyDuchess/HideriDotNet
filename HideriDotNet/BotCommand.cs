@@ -24,8 +24,48 @@ namespace HideriDotNet
         //Split the arguments
         public virtual string[] splitArgs( string arguments )
         {
-            var args = arguments.Split(' ');
-            return args.Where((val, idx) => idx != 0).ToArray();
+            var split = arguments.Split(' ');
+            if (split.Length > 1)
+                arguments = arguments.Substring(split[0].Length + 1);
+            else
+                return new string[] { };
+            if (getArguments() >= 0)
+            {
+                var instring = false;
+                var argList = new List<string>();
+                //var arg = new string[getArguments()];
+                var currentArg = 0;
+                var currentArgString = "";
+                for (var i=0;i<arguments.Length;i++)
+                {
+                    if (arguments[i] == '"')
+                    {
+                        instring = !instring;
+                        continue;
+                    }
+                    if (currentArg + 1 != getArguments() && instring == false)
+                    {
+                        if (arguments[i] != ' ')
+                        {
+                            currentArgString += arguments[i];
+                        }
+                        else
+                        {
+                            argList.Add(currentArgString);
+                            currentArg += 1;
+                            currentArgString = "";
+                        }
+                    }
+                    else
+                    {
+                        currentArgString += arguments[i];
+                    }
+                }
+                argList.Add(currentArgString);
+                return argList.ToArray();
+            }
+            else
+                return new string[] { };
         }
 
         //Only really necessary for commands that accept arguments with spaces and the like for the last argument, so that it doesn't get split into arguments and instead counts as 1

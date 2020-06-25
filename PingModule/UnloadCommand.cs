@@ -11,6 +11,10 @@ namespace HideriModules
 {
     public class UnloadCommand : BotCommand
     {
+        public override int getArguments()
+        {
+            return 1;
+        }
         public override string GetUsage()
         {
             return "[Module name]";

@@ -11,10 +11,12 @@ namespace Tags
 {
     public class TagsModule : BotModule
     {
+        public static TagsModule instance;
         public static TagDatabase database;
         Program bot;
         public override void Initialize(Program botCore)
         {
+            instance = this;
             if (File.Exists(Path.Combine(directory, "database.json")))
                 database = JsonConvert.DeserializeObject<TagDatabase>(File.ReadAllText(Path.Combine(directory, "database.json")));
             else
@@ -23,6 +25,11 @@ namespace Tags
             var tagCommand = new TagCommand();
             botCore.AddCommand("t", new TagCommand());
             botCore.AddCommand("tag", new TagCommand());
+        }
+
+        public static void SaveTags()
+        {
+            File.WriteAllText(Path.Combine(instance.directory, "database.json"), JsonConvert.SerializeObject(database));
         }
 
         public override void Unload()

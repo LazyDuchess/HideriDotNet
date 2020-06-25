@@ -11,6 +11,10 @@ namespace BasicModule
 {
     public class TellCommand : BotCommand
     {
+        public override int getArguments()
+        {
+            return 2;
+        }
         public override string GetUsage()
         {
             return "[Channel ID] [Text]";
