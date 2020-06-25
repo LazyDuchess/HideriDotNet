@@ -8,12 +8,21 @@ namespace HideriDotNet
 {
     public abstract class BotModule
     {
-        public abstract string GetName();
+        public string directory;
+        public ModuleData data;
+        public virtual void Initialize(Program botCore)
+        {
 
-        public abstract string GetDescription();
+        }
 
-        public abstract void Initialize(Program botCore);
+        public virtual void CleanUp()
+        {
 
-        public abstract void CleanUp();
+        }
+
+        public virtual void Unload()
+        {
+
+        }
     }
 }

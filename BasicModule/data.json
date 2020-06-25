@@ -1,0 +1,7 @@
+{
+	"name":"Basic module",
+	"description":"Module with basic bot commands",
+	"author":"Lazy Duchess",
+	"main":"BasicModule.BasicModule",
+	
+}

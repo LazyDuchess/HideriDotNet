@@ -1,0 +1,7 @@
+{
+	"name":"Tags module",
+	"description":"Like NotSoBot but not as cool",
+	"author":"Lazy Duchess",
+	"main":"Tags.TagsModule",
+	
+}

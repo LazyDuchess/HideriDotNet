@@ -10,7 +10,7 @@ namespace HideriDotNet
     {
         public string defaultPrefix = "/";
         public string botName = "Hideri";
-        public string botToken = "NDc5ODYyNDMyMzc5MDQzODQw.XvPpvQ.LkVUouwTpAXbZo9Ra_uQncjrmx8";
-        public bool logMessages = true;
+        public string botToken = "-";
+        public List<string> owners = new List<string>();
     }
 }
