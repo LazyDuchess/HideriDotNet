@@ -2,7 +2,9 @@
 using HideriDotNet;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -35,7 +37,9 @@ namespace ImageModule
                 if (element.Attachments.Count > 0)
                 {
                     var att = element.Attachments.First();
-                    message.Channel.SendMessageAsync(att.Url);
+                    WebClient client = new WebClient();
+                    Stream stream = client.OpenRead(att.Url);
+                    message.Channel.channel.SendFileAsync(stream, att.Filename);
                     break;
                 }
             }
