@@ -22,7 +22,9 @@ namespace HideriDotNet
         {
             if (base.Run(bot, arguments, message))
             {
+                //Execute on stop delegate
                 bot.onStop?.Invoke(message);
+                //Stop the bot.
                 bot.Stop();
                 return true;
             }

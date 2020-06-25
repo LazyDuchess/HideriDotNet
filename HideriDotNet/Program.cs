@@ -68,6 +68,7 @@ namespace HideriDotNet
             }
             Console.WriteLine("Default prefix is " + program.botSettings.defaultPrefix);
             var uiThreadDelegate = new ThreadStart(program.UIThread);
+            //UI is kinda useless so it's been scrapped for now, you can do almost anything in the console anyways
             /*
             if (args.Contains("-ui"))
             {
@@ -77,6 +78,7 @@ namespace HideriDotNet
             }
             else
                 Console.WriteLine("Starting without UI");*/
+            //Ignore me
             Application.ApplicationExit += Application_ApplicationExit;
             program.MainAsync().GetAwaiter().GetResult();
             
@@ -84,7 +86,7 @@ namespace HideriDotNet
 
         private static void Application_ApplicationExit(object sender, EventArgs e)
         {
-            Console.WriteLine("Pingas");
+            Console.WriteLine("Exiting");
         }
 
         public bool UnloadModule(string moduleName)

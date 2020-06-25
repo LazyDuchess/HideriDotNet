@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace HideriDotNet
 {
+    //data.json of modules
     public class ModuleData
     {
         public string name = "";

@@ -7,12 +7,17 @@ using System.Threading.Tasks;
 
 namespace HideriDotNet
 {
+    //Generic message wrapper to make it easier to access messages sent from console or Discord in the same way
     public class MessageWrapper
     {
+        //Channel wrapper for the channel this message was sent in
         public ChannelWrapper Channel;
+        //Actual Discord message
         public SocketMessage message;
+        //Console?
         public bool headless = false;
         private readonly string content;
+        //Was gonna use this for something but eh, might still be useful?
         private readonly DateTimeOffset timestamp;
         public string Content
         {
@@ -36,13 +41,14 @@ namespace HideriDotNet
             }
         }
 
+        //Generate a message wrapper for an arbitrary non-discord message
         public MessageWrapper(string content)
         {
             this.content = content;
             this.headless = true;
             this.Channel = new ChannelWrapper();
         }
-
+        //Generate a message wrapper for an actual discord message
         public MessageWrapper(SocketMessage message)
         {
             this.message = message;

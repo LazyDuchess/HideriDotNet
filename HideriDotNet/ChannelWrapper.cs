@@ -7,9 +7,12 @@ using System.Threading.Tasks;
 
 namespace HideriDotNet
 {
+    //Generic wrapper for a discord channel, to make it easier to make commands that work both in console and discord
     public class ChannelWrapper
     {
+        //Console?
         public bool headless = true;
+        //Actual discord channel
         public ISocketMessageChannel channel;
 
         public ChannelWrapper(ISocketMessageChannel channel)

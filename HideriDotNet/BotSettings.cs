@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace HideriDotNet
 {
+    //Bot settings
     public class BotSettings
     {
         public string defaultPrefix = "/";
