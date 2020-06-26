@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Discord.WebSocket;
@@ -38,6 +40,20 @@ namespace Tags
             return 3;
         }
 
+        void SendTag(Tag tag, ChannelWrapper channel, string prefix = "")
+        {
+            if (channel.headless || tag.attachmentUrl == null || tag.attachmentUrl == "")
+            {
+                channel.SendMessageAsync(prefix + tag.content);
+            }
+            else
+            {
+                WebClient client = new WebClient();
+                Stream stream = client.OpenRead(tag.attachmentUrl);
+                channel.channel.SendFileAsync(stream, tag.attachmentFilename, prefix + tag.content);
+            }
+        }
+
         public override bool Run( Program bot, string[] arguments, MessageWrapper message)
         {
             if (arguments.Length >= 1)
@@ -52,7 +68,8 @@ namespace Tags
             {
                 case "random":
                     var rtag = TagsModule.database.tags.ElementAt(new Random().Next(0,TagsModule.database.tags.Count));
-                    message.Channel.SendMessageAsync("Tag: " + rtag.Key+Environment.NewLine+rtag.Value.content);
+                    SendTag(rtag.Value, message.Channel, "Tag: " + rtag.Key + Environment.NewLine);
+                    //message.Channel.SendMessageAsync("Tag: " + rtag.Key+Environment.NewLine+rtag.Value.content);
                     return true;
 
                 case "add":
@@ -64,7 +81,16 @@ namespace Tags
                     if (message.headless)
                         TagsModule.database.tags[arguments[1]] = new Tag("Bot", "Console", "No ID", arguments[2]);
                     else
-                        TagsModule.database.tags[arguments[1]] = new Tag(message.message.Author.Username, message.message.Author.Discriminator, message.message.Author.Id.ToString(), arguments[2]);
+                    {
+                        var attachName = "";
+                        var attachUrl = "";
+                        if (message.message.Attachments.Count > 0)
+                        {
+                            attachName = message.message.Attachments.First().Filename;
+                            attachUrl = message.message.Attachments.First().Url;
+                        }
+                        TagsModule.database.tags[arguments[1]] = new Tag(message.message.Author.Username, message.message.Author.Discriminator, message.message.Author.Id.ToString(), arguments[2], attachName, attachUrl);
+                    }
                     message.Channel.SendMessageAsync("Added tag " + arguments[1]);
                     TagsModule.SaveTags();
                     return true;
@@ -79,7 +105,16 @@ namespace Tags
                         }
                         else
                         {
+                            var attachName = "";
+                            var attachUrl = "";
+                            if (message.message.Attachments.Count > 0)
+                            {
+                                attachName = message.message.Attachments.First().Filename;
+                                attachUrl = message.message.Attachments.First().Url;
+                            }
                             TagsModule.database.tags[arguments[1]].content = arguments[2];
+                            TagsModule.database.tags[arguments[1]].attachmentFilename = attachName;
+                            TagsModule.database.tags[arguments[1]].attachmentUrl = attachUrl;
                             message.Channel.SendMessageAsync("Edited tag " + arguments[1]);
                             TagsModule.SaveTags();
                             return true;
@@ -125,7 +160,7 @@ namespace Tags
             }
             if (TagsModule.database.tags.ContainsKey(arguments[0]))
             {
-                message.Channel.SendMessageAsync(TagsModule.database.tags[arguments[0]].content);
+                SendTag(TagsModule.database.tags[arguments[0]], message.Channel);
                 return true;
             }
             message.Channel.SendMessageAsync("That tag doesn't exist.");

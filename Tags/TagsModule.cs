@@ -57,13 +57,17 @@ namespace Tags
         public string ownerTag;
         public string ownerID;
         public string content;
+        public string attachmentFilename = "";
+        public string attachmentUrl = "";
 
-        public Tag(string ownerName, string ownerTag, string ownerID, string content)
+        public Tag(string ownerName, string ownerTag, string ownerID, string content, string attachmentFilename = "", string attachmentUrl = "")
         {
             this.ownerID = ownerID;
             this.ownerName = ownerName;
             this.ownerTag = ownerTag;
             this.content = content;
+            this.attachmentFilename = attachmentFilename;
+            this.attachmentUrl = attachmentUrl;
         }
     }
 }
