@@ -79,9 +79,15 @@ namespace Tags
                         return false;
                     }
                     if (message.headless)
-                        TagsModule.database.tags[arguments[1]] = new Tag("Bot", "Console", "No ID", arguments[2]);
+                    {
+                        if (arguments.Length <= 2)
+                            message.Channel.SendMessageAsync("Can't add an empty tag.");
+                        else
+                            TagsModule.database.tags[arguments[1]] = new Tag("Bot", "Console", "No ID", arguments[2]);
+                    }
                     else
                     {
+                        var content = "";
                         var attachName = "";
                         var attachUrl = "";
                         if (message.message.Attachments.Count > 0)
@@ -89,7 +95,15 @@ namespace Tags
                             attachName = message.message.Attachments.First().Filename;
                             attachUrl = message.message.Attachments.First().Url;
                         }
-                        TagsModule.database.tags[arguments[1]] = new Tag(message.message.Author.Username, message.message.Author.Discriminator, message.message.Author.Id.ToString(), arguments[2], attachName, attachUrl);
+                        if (arguments.Length <= 2 && attachUrl == "")
+                        {
+                            message.Channel.SendMessageAsync("Can't add an empty tag.");
+                            return false;
+
+                        }
+                        else if (arguments.Length > 2)
+                            content = arguments[2];
+                        TagsModule.database.tags[arguments[1]] = new Tag(message.message.Author.Username, message.message.Author.Discriminator, message.message.Author.Id.ToString(), content, attachName, attachUrl);
                     }
                     message.Channel.SendMessageAsync("Added tag " + arguments[1]);
                     TagsModule.SaveTags();
@@ -105,6 +119,7 @@ namespace Tags
                         }
                         else
                         {
+                            var content = "";
                             var attachName = "";
                             var attachUrl = "";
                             if (message.message.Attachments.Count > 0)
@@ -112,7 +127,15 @@ namespace Tags
                                 attachName = message.message.Attachments.First().Filename;
                                 attachUrl = message.message.Attachments.First().Url;
                             }
-                            TagsModule.database.tags[arguments[1]].content = arguments[2];
+                            if (arguments.Length <= 2 && attachUrl == "")
+                            {
+                                message.Channel.SendMessageAsync("Can't add an empty tag.");
+                                return false;
+
+                            }
+                            else if (arguments.Length > 2)
+                                content = arguments[2];
+                            TagsModule.database.tags[arguments[1]].content = content;
                             TagsModule.database.tags[arguments[1]].attachmentFilename = attachName;
                             TagsModule.database.tags[arguments[1]].attachmentUrl = attachUrl;
                             message.Channel.SendMessageAsync("Edited tag " + arguments[1]);

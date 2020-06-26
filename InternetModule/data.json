@@ -1,0 +1,7 @@
+﻿{
+  "name": "Internet Module",
+  "description": "This is just used as a test for loading modules from the internet. Will make the bot reply everytime someone says owo.",
+  "author": "Lazy Duchess",
+  "main": "InternetModule.InternetModule"
+
+}

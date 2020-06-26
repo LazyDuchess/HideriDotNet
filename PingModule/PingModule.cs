@@ -16,6 +16,7 @@ namespace HideriModules
             botCore.AddCommand("modules", new PingCommand());
             botCore.AddCommand("unload", new UnloadCommand());
             botCore.AddCommand("load", new LoadCommand());
+            botCore.AddCommand("netload", new NetLoadCommand());
             botCore.AddCommand("reload", new ReloadCommand());
         }
 
@@ -24,6 +25,7 @@ namespace HideriModules
             bot.RemoveCommand("modules");
             bot.RemoveCommand("unload");
             bot.RemoveCommand("load");
+            bot.RemoveCommand("netload");
             bot.RemoveCommand("reload");
         }
     }

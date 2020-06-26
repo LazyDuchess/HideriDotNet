@@ -111,7 +111,9 @@ namespace HideriDotNet
             try
             {
                 var moduleData = JsonConvert.DeserializeObject<ModuleData>(File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "Modules/" + moduleName + "/data.json")));
-                var asm = Assembly.LoadFile(Path.Combine(Directory.GetCurrentDirectory(),"Modules/" + moduleName + "/" + moduleName + ".dll"));
+                var data = File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "Modules/" + moduleName + "/" + moduleName + ".dll"));
+                //var asm = Assembly.LoadFile(Path.Combine(Directory.GetCurrentDirectory(),"Modules/" + moduleName + "/" + moduleName + ".dll"));
+                var asm = Assembly.Load(data);
                 var type = asm.GetType(moduleData.main);
                 var runnable = Activator.CreateInstance(type) as BotModule;
                 if (runnable != null)
