@@ -44,13 +44,17 @@ namespace NSFWModule
                 
                 if (!message.headless)
                 {
-                    var channel = ((ITextChannel)message.message.Channel);
-                    if (channel != null && !channel.IsNsfw)
+                    if (typeof(ITextChannel).IsAssignableFrom(message.message.Channel.GetType()))
                     {
-                        query.Replace("rating:explicit", "");
-                        query.Replace("rating:questionable", "");
-                        query.Replace("rating:safe", "");
-                        query += " rating:safe";
+                        var channel = (ITextChannel)message.message.Channel;
+                        if (!channel.IsNsfw)
+                        {
+                            query = query.Replace("rating:explicit", "");
+                            query = query.Replace("rating:questionable", "");
+                            query = query.Replace("rating:safe", "");
+                            query += " rating:safe";
+                            query = query.Trim();
+                        }
                     }
                 }
                 query = query.Replace(" ", "%20");
