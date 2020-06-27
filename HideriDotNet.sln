@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicModule", "BasicModule\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingModule", "PingModule\PingModule.csproj", "{01392EC4-5F25-469B-B704-FC36B85BBB74}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NSFWModule", "NSFWModule\NSFWModule.csproj", "{B1578450-94C0-4173-8FCC-332944030A16}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{01392EC4-5F25-469B-B704-FC36B85BBB74}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{01392EC4-5F25-469B-B704-FC36B85BBB74}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{01392EC4-5F25-469B-B704-FC36B85BBB74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1578450-94C0-4173-8FCC-332944030A16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1578450-94C0-4173-8FCC-332944030A16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1578450-94C0-4173-8FCC-332944030A16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1578450-94C0-4173-8FCC-332944030A16}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

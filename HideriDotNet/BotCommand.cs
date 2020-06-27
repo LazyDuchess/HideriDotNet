@@ -11,6 +11,14 @@ namespace HideriDotNet
     //Command class
     public abstract class BotCommand
     {
+        public virtual string GetCategory()
+        {
+            return "General";
+        }
+        public virtual int GetPriority()
+        {
+            return 0;
+        }
         //Command usage, eg [Argument 0] [Argument 1]
         public virtual string GetUsage()
         {
