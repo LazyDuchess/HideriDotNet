@@ -2,6 +2,6 @@
 	"name":"Image module",
 	"description":"Image manipulation module",
 	"author":"Lazy Duchess",
-	"main":"ImageModule.ImageModule",
+	"main":"ImageModule.ImageModule"
 	
 }

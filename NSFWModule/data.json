@@ -2,6 +2,6 @@
 	"name":"NSFW module",
 	"description":"Hideri's nsfw module",
 	"author":"Lazy Duchess",
-	"main":"NSFWModule.NSFWModule",
+	"main":"NSFWModule.NSFWModule"
 	
 }

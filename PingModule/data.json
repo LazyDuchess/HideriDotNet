@@ -2,6 +2,6 @@
 	"name":"Engine module",
 	"description":"Low level bot manipulation module",
 	"author":"Lazy Duchess",
-	"main":"HideriModules.PingModule",
+	"main":"HideriModules.PingModule"
 	
 }
