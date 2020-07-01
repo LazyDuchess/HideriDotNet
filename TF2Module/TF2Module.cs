@@ -115,15 +115,23 @@ namespace TF2Module
                 }
                 catch (Exception u)
                 {
+                    stream = null;
                     //yep
                 }
                 StreamReader reader = null;
                 TF2SchemaItems obj = null;
                 if (stream != null)
                 {
-                    reader = new StreamReader(stream);
-                    var sdata = reader.ReadToEnd();
-                    obj = JsonConvert.DeserializeObject<TF2SchemaItems>(sdata);
+                    try
+                    {
+                        reader = new StreamReader(stream);
+                        var sdata = reader.ReadToEnd();
+                        obj = JsonConvert.DeserializeObject<TF2SchemaItems>(sdata);
+                    }
+                    catch(Exception ex)
+                    {
+                        stream = null;
+                    }
                 }
                 var retry = 0;
                 if (stream != null && obj.result != null && obj.result.items != null)
@@ -138,13 +146,21 @@ namespace TF2Module
                     }
                     catch (Exception u)
                     {
+                        stream = null;
                         //yup
                     }
                     if (stream != null)
                     {
-                        reader = new StreamReader(stream);
-                        var sdata = reader.ReadToEnd();
-                        obj = JsonConvert.DeserializeObject<TF2SchemaItems>(sdata);
+                        try
+                        {
+                            reader = new StreamReader(stream);
+                            var sdata = reader.ReadToEnd();
+                            obj = JsonConvert.DeserializeObject<TF2SchemaItems>(sdata);
+                        }
+                        catch (Exception ex)
+                        {
+                            stream = null;
+                        }
                     }
                     if (stream != null && obj.result != null && obj.result.items != null)
                         success = true;

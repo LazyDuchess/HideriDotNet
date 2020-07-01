@@ -112,15 +112,29 @@ namespace TF2Module
                             return false;
                         }
                         var refAmount = 0.0f;
+                        var scrapAmount = 0;
+                        var recAmount = 0;
                         foreach(var element in dbp.defindex)
                         {
                             switch(element)
                             {
                                 case 5000:
                                     refAmount += 0.11f;
+                                    scrapAmount += 1;
+                                    if (scrapAmount == 9)
+                                    {
+                                        refAmount += 0.01f;
+                                        scrapAmount = 0;
+                                    }
                                     break;
                                 case 5001:
                                     refAmount += 0.33f;
+                                    recAmount += 1;
+                                    if (recAmount == 3)
+                                    {
+                                        refAmount += 0.01f;
+                                        recAmount = 0;
+                                    }
                                     break;
                                 case 5002:
                                     refAmount += 1.0f;

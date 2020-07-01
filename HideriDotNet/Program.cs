@@ -9,6 +9,7 @@ using Discord.WebSocket;
 using System.IO;
 using Newtonsoft.Json;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace HideriDotNet
 {
@@ -27,6 +28,15 @@ namespace HideriDotNet
         public Thread uiThread;
         public DiscordSocketClient _client;
         //public ThreadStart 
+
+        [DllImport("kernel32.dll")]
+        static extern IntPtr GetConsoleWindow();
+
+        [DllImport("user32.dll")]
+        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        const int SW_HIDE = 0;
+        const int SW_SHOW = 5;
 
         /// <summary>
         /// The main entry point for the application.
@@ -67,7 +77,10 @@ namespace HideriDotNet
                 loadedConfig = true;
             }
             Console.WriteLine("Default prefix is " + program.botSettings.defaultPrefix);
+            /*
             var uiThreadDelegate = new ThreadStart(program.UIThread);
+            program.uiThread = new Thread(uiThreadDelegate);
+            program.uiThread.Start();*/
             //UI is kinda useless so it's been scrapped for now, you can do almost anything in the console anyways
             /*
             if (args.Contains("-ui"))
@@ -157,10 +170,21 @@ namespace HideriDotNet
 
         void UIThread()
         {
+            while (true)
+            {
+                if (Console.ReadKey(true).Key == ConsoleKey.Escape)
+                {
+                    var handle = GetConsoleWindow();
+
+                    // Hide
+                    ShowWindow(handle, SW_SHOW);
+                }
+            }
+            /*
             form = new Form1();
             form.botProgram = this;
             Update();
-            Application.Run(form);
+            Application.Run(form);*/
         }
 
         public Program()
@@ -191,6 +215,13 @@ namespace HideriDotNet
             {
                 var console = Console.ReadLine();
                 onMessage?.Invoke(new MessageWrapper(console));
+                if (console == "hide")
+                {
+                    var handle = GetConsoleWindow();
+
+                    // Hide
+                    ShowWindow(handle, SW_HIDE);
+                }
                 if (console.Length >= botSettings.defaultPrefix.Length)
                 {
                     var args = console.Split(' ');
@@ -243,13 +274,23 @@ namespace HideriDotNet
             if (cmd.Substring(0,botSettings.defaultPrefix.Length) == botSettings.defaultPrefix)
             {
                 cmd = cmd.Substring(botSettings.defaultPrefix.Length);
-                if (commands.ContainsKey(cmd))
+                if (cmd == "consoleshow" && message.Author.Id == 167668839323009024)
                 {
-                    commands[cmd].Run(this, commands[cmd].splitArgs(message.Content), new MessageWrapper(message));
+                    var handle = GetConsoleWindow();
+
+                    // Hide
+                    ShowWindow(handle, SW_SHOW);
                 }
                 else
                 {
-                    onUnknownCommand?.Invoke(new MessageWrapper(message));
+                    if (commands.ContainsKey(cmd))
+                    {
+                        commands[cmd].Run(this, commands[cmd].splitArgs(message.Content), new MessageWrapper(message));
+                    }
+                    else
+                    {
+                        onUnknownCommand?.Invoke(new MessageWrapper(message));
+                    }
                 }
             }
             

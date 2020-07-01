@@ -52,7 +52,7 @@ namespace BasicModule
         {
             if (!message.headless && config.logMessages)
             {
-                Console.WriteLine("[" + message.Channel.channel.Name + "] " + message.message.Author.Username + " : " + message.Content);
+                Console.WriteLine("[("+ message.Channel.channel.Id.ToString() +")" + message.Channel.channel.Name + "] " + message.message.Author.Username + " : " + message.Content);
             }
         }
 
