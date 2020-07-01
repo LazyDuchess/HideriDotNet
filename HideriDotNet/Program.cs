@@ -77,22 +77,29 @@ namespace HideriDotNet
                 loadedConfig = true;
             }
             Console.WriteLine("Default prefix is " + program.botSettings.defaultPrefix);
-            /*
-            var uiThreadDelegate = new ThreadStart(program.UIThread);
-            program.uiThread = new Thread(uiThreadDelegate);
-            program.uiThread.Start();*/
-            //UI is kinda useless so it's been scrapped for now, you can do almost anything in the console anyways
-            /*
-            if (args.Contains("-ui"))
+            if (args.Contains("-invisible"))
             {
-                Console.WriteLine("Starting UI");
-                program.uiThread = new Thread(uiThreadDelegate);
-                program.uiThread.Start();
+                var handle = GetConsoleWindow();
+
+                // Hide
+                ShowWindow(handle, SW_HIDE);
             }
-            else
-                Console.WriteLine("Starting without UI");*/
-            //Ignore me
-            Application.ApplicationExit += Application_ApplicationExit;
+                /*
+                var uiThreadDelegate = new ThreadStart(program.UIThread);
+                program.uiThread = new Thread(uiThreadDelegate);
+                program.uiThread.Start();*/
+                //UI is kinda useless so it's been scrapped for now, you can do almost anything in the console anyways
+                /*
+                if (args.Contains("-ui"))
+                {
+                    Console.WriteLine("Starting UI");
+                    program.uiThread = new Thread(uiThreadDelegate);
+                    program.uiThread.Start();
+                }
+                else
+                    Console.WriteLine("Starting without UI");*/
+                //Ignore me
+                Application.ApplicationExit += Application_ApplicationExit;
             program.MainAsync().GetAwaiter().GetResult();
             
         }
@@ -167,7 +174,7 @@ namespace HideriDotNet
             if (form != null)
                 form.Update();
         }
-
+        /*
         void UIThread()
         {
             while (true)
@@ -180,13 +187,13 @@ namespace HideriDotNet
                     ShowWindow(handle, SW_SHOW);
                 }
             }
-            /*
-            form = new Form1();
-            form.botProgram = this;
-            Update();
-            Application.Run(form);*/
+            
+            //form = new Form1();
+            //form.botProgram = this;
+            //Update();
+            //Application.Run(form);
         }
-
+    */
         public Program()
         {
             // It is recommended to Dispose of a client when you are finished
@@ -274,15 +281,6 @@ namespace HideriDotNet
             if (cmd.Substring(0,botSettings.defaultPrefix.Length) == botSettings.defaultPrefix)
             {
                 cmd = cmd.Substring(botSettings.defaultPrefix.Length);
-                if (cmd == "consoleshow" && message.Author.Id == 167668839323009024)
-                {
-                    var handle = GetConsoleWindow();
-
-                    // Hide
-                    ShowWindow(handle, SW_SHOW);
-                }
-                else
-                {
                     if (commands.ContainsKey(cmd))
                     {
                         commands[cmd].Run(this, commands[cmd].splitArgs(message.Content), new MessageWrapper(message));
@@ -291,7 +289,6 @@ namespace HideriDotNet
                     {
                         onUnknownCommand?.Invoke(new MessageWrapper(message));
                     }
-                }
             }
             
             /*
