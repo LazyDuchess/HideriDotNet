@@ -15,6 +15,7 @@ namespace HideriDotNet
 {
     public class Program
     {
+        public static bool Debug = false;
         public delegate void MessageEvent(MessageWrapper message);
 
         public MessageEvent onMessage;
@@ -83,6 +84,10 @@ namespace HideriDotNet
 
                 // Hide
                 ShowWindow(handle, SW_HIDE);
+            }
+            if (args.Contains("-debug"))
+            {
+                Debug = true;
             }
                 /*
                 var uiThreadDelegate = new ThreadStart(program.UIThread);
@@ -283,7 +288,19 @@ namespace HideriDotNet
                 cmd = cmd.Substring(botSettings.defaultPrefix.Length);
                     if (commands.ContainsKey(cmd))
                     {
+                    try
+                    {
                         commands[cmd].Run(this, commands[cmd].splitArgs(message.Content), new MessageWrapper(message));
+                    }
+                    catch(Exception ex)
+                    {
+                        if (!Debug)
+                            message.Channel.SendMessageAsync("Something went wrong, sorry!");
+                        else
+                        {
+                            message.Channel.SendMessageAsync("Something went wrong. Stack trace: "+Environment.NewLine + "```" + ex.ToString() + "```");
+                        }
+                    }
                     }
                     else
                     {

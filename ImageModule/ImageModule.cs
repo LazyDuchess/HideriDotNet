@@ -13,12 +13,12 @@ namespace ImageModule
         public override void Initialize(Program botCore)
         {
             bot = botCore;
-            botCore.AddCommand("test", new TestCommand());
+            botCore.AddCommand("avatar", new AvatarCommand());
         }
 
         public override void Unload()
         {
-            bot.RemoveCommand("test");
+            bot.RemoveCommand("avatar");
         }
     }
 }

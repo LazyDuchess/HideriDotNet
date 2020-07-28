@@ -38,11 +38,32 @@ namespace BasicModule
                 newArgs[1] = arguments.Substring(arg[0].Length + arg[1].Length + 2);
             return newArgs;
         }
+        async Task RunUserCommand(Program bot, string[] arguments, MessageWrapper message)
+        {
+            IGuild guild = null;
+            if (!message.headless && typeof(IGuildChannel).IsAssignableFrom(message.message.Channel.GetType()))
+                guild = (message.message.Channel as IGuildChannel).Guild;
+            var user = await Utils.GetMention(arguments[0], guild);
+            var user2 = await message.Channel.channel.GetUserAsync(user.id);
+            if (user2 != null)
+            {
+                user2.SendMessageAsync(arguments[1]);
+            }
+        }
         public override bool Run(Program bot, string[] arguments, MessageWrapper message)
         {
             if (base.Run( bot, arguments, message))
             {
-                (bot._client.GetChannel(ulong.Parse(arguments[0])) as IMessageChannel).SendMessageAsync(arguments[1]);
+                ulong result;
+                if (!ulong.TryParse(arguments[0], out result))
+                    result = 0;
+                var channel = bot._client.GetChannel(result);
+                if (result != 0)
+                    (channel as IMessageChannel).SendMessageAsync(arguments[1]);
+                else
+                {
+                    RunUserCommand(bot, arguments, message);
+                }
                 return true;
             }
             return false;

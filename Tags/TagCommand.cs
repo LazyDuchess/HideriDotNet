@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using HideriDotNet;
 
@@ -178,7 +179,29 @@ namespace Tags
                     message.Channel.SendMessageAsync("That tag doesn't exist.");
                     return false;
 
-
+                case "list":
+                    IGuild guild = null;
+                    if (!message.headless && typeof(IGuildChannel).IsAssignableFrom(message.message.Channel.GetType()))
+                        guild = (message.message.Channel as IGuildChannel).Guild;
+                    var user = Utils.GetMention(arguments[1], guild);
+                    while(!user.IsCompleted)
+                    {
+                        //WAIT
+                    }
+                    if (user.Result.success)
+                    {
+                        var txt = "Tags owned by user id " + user.Result.id.ToString() + ":" + Environment.NewLine;
+                        foreach(var element in TagsModule.database.tags)
+                        {
+                            if (element.Value.ownerID == user.Result.id.ToString())
+                            {
+                                txt += "**" + element.Key + "**" + Environment.NewLine;
+                            }
+                        }
+                        message.Channel.SendMessageAsync(txt);
+                        return true;
+                    }
+                    return false;
 
             }
             if (TagsModule.database.tags.ContainsKey(arguments[0]))

@@ -29,51 +29,50 @@ namespace TF2Module
         public static Dictionary<ulong, TF2SchemaItem> schemaItemsByIndex = new Dictionary<ulong, TF2SchemaItem>();
         void LoadItems()
         {
-            var start = 0;
-            WebClient client = new WebClient();
-            Stream stream = client.OpenRead("http://api.steampowered.com/IEconItems_440/GetSchemaItems/v0001/?key=F7416B287CE89DC0407271739A22296C&format=json&language=en");
-            TF2SchemaItems obj;
-            using (StreamReader reader = new StreamReader(stream))
+            try
             {
-                var data = reader.ReadToEnd();
-                obj = JsonConvert.DeserializeObject<TF2SchemaItems>(data);
-                foreach (var element in obj.result.items)
-                {
-                    schemaItemsByName[element.item_name.ToLowerInvariant()] = element;
-                    schemaItemsByIndex[element.defindex] = element;
-                }
-                //schemaItemsCache.Add(obj);
-            }
-            
-            while (obj.result.items.Count > 0)
-            {
-                start += 1000;
-                stream = client.OpenRead("http://api.steampowered.com/IEconItems_440/GetSchemaItems/v0001/?key=F7416B287CE89DC0407271739A22296C&format=json&language=en&start=" + start.ToString());
+                var start = 0;
+                WebClient client = new WebClient();
+                Stream stream = client.OpenRead("http://api.steampowered.com/IEconItems_440/GetSchemaItems/v0001/?key=F7416B287CE89DC0407271739A22296C&format=json&language=en");
+                TF2SchemaItems obj;
                 using (StreamReader reader = new StreamReader(stream))
                 {
                     var data = reader.ReadToEnd();
                     obj = JsonConvert.DeserializeObject<TF2SchemaItems>(data);
+                    foreach (var element in obj.result.items)
+                    {
+                        schemaItemsByName[element.item_name.ToLowerInvariant()] = element;
+                        schemaItemsByIndex[element.defindex] = element;
+                    }
+                    //schemaItemsCache.Add(obj);
+                }
+
+                while (obj.result.items.Count > 0)
+                {
+                    start += 1000;
+                    stream = client.OpenRead("http://api.steampowered.com/IEconItems_440/GetSchemaItems/v0001/?key=F7416B287CE89DC0407271739A22296C&format=json&language=en&start=" + start.ToString());
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        var data = reader.ReadToEnd();
+                        obj = JsonConvert.DeserializeObject<TF2SchemaItems>(data);
                         foreach (var element in obj.result.items)
                         {
                             schemaItemsByName[element.item_name.ToLowerInvariant()] = element;
                             schemaItemsByIndex[element.defindex] = element;
                         }
+                    }
                 }
+                loaded = true;
+                Console.WriteLine("TF2 items cache loaded.");
+                System.Timers.Timer aTimer = new System.Timers.Timer();
+                aTimer.Elapsed += new ElapsedEventHandler(announceBackpacks);
+                aTimer.Interval = TimeSpan.FromMinutes(2).TotalMilliseconds;
+                aTimer.Enabled = true;
             }
-            loaded = true;
-            Console.WriteLine("TF2 items cache loaded.");
-            /*
-            var startTimeSpan = TimeSpan.Zero;
-            var periodTimeSpan = TimeSpan.FromMinutes(5);
-
-            var timer = new System.Threading.Timer((e) =>
+            catch(Exception e)
             {
-                announceBackpacks();
-            }, null, startTimeSpan, periodTimeSpan);*/
-            System.Timers.Timer aTimer = new System.Timers.Timer();
-            aTimer.Elapsed += new ElapsedEventHandler(announceBackpacks);
-            aTimer.Interval = TimeSpan.FromMinutes(2).TotalMilliseconds;
-            aTimer.Enabled = true;
+                Console.WriteLine("There was an issue loading TF2 Item data:" + Environment.NewLine + e.ToString());
+            }
         }
 
         public static void Save()

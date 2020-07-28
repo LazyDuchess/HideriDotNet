@@ -75,6 +75,7 @@
   <ItemGroup>
     <Compile Include="ImageModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="AvatarCommand.cs" />
     <Compile Include="TestCommand.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -66,6 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BasicModule.cs" />
+    <Compile Include="ShowCommand.cs" />
     <Compile Include="HelpCommand.cs" />
     <Compile Include="LatencyCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
