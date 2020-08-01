@@ -27,15 +27,15 @@ namespace HideriModules
         {
             return true;
         }
-        public override bool Run( Program bot, string[] arguments, MessageWrapper message)
+        public override bool Run( string[] arguments, MessageWrapper message)
         {
-            if (base.Run( bot, arguments, message))
+            if (base.Run( arguments, message))
             {
                 message.Channel.SendMessageAsync("Attempting to reload module " + arguments[0]);
-                var result = bot.UnloadModule(arguments[0]);
+                var result = Program.UnloadModule(arguments[0]);
                 if (result)
                 {
-                    result = bot.LoadModule(arguments[0]);
+                    result = Program.LoadModule(arguments[0]);
                     if (result)
                         message.Channel.SendMessageAsync("Module reloaded.");
                     else

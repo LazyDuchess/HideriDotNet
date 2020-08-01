@@ -80,7 +80,7 @@ namespace TF2Module
             File.WriteAllText(dbFolder,JsonConvert.SerializeObject(database));
         }
 
-        public override void Initialize(Program botCore)
+        public override void Initialize()
         {
             instance = this;
             dbFolder = Path.Combine(directory, "database.json");
@@ -95,8 +95,7 @@ namespace TF2Module
             ThreadStart itemThreadStart = new ThreadStart(LoadItems);
             var itemThread = new Thread(itemThreadStart);
             itemThread.Start();
-            bot = botCore;
-            bot.AddCommand("tf2", new TF2Command());
+            Program.AddCommand("tf2", new TF2Command());
         }
         void announceBackpacks(object source, ElapsedEventArgs e)
         {
@@ -172,88 +171,91 @@ namespace TF2Module
                     var myPending = new TF2BackpackPendingAnnounce();
                     pendingAnnounces[ulong.Parse(element.Key)] = myPending;
                     var playerDb = IDFiles.ReturnObjectForId<TF2PlayerDatabase>(ulong.Parse(element.Key), "player.json", this);
-                    if (!playerDb.cached)
+                    if (playerDb != null)
                     {
-                        playerDb.cached = true;
-                        if (playerDb.ids == null)
-                            playerDb.ids = new List<ulong>();
-                        foreach (var element3 in obj.result.items)
+                        if (!playerDb.cached)
                         {
-                            playerDb.ids.Add(element3.id);
-                            playerDb.defindex.Add(element3.defindex);
-                        }
-                        playerDb.timestamp = DateTime.Now;
-                        IDFiles.StoreObjectForId(ulong.Parse(element.Key), "player.json", this, playerDb);
-                    }
-                    else
-                    {
-                        var receivedItems = new List<TF2SchemaItem>();
-                        var lostItems = new List<TF2SchemaItem>();
-                        var newCache = new List<ulong>();
-                        var newDefindexCache = new List<ulong>();
-                        foreach (var element3 in obj.result.items)
-                        {
-                            newCache.Add(element3.id);
-                            newDefindexCache.Add(element3.defindex);
-                            if (!playerDb.ids.Contains(element3.id))
+                            playerDb.cached = true;
+                            if (playerDb.ids == null)
+                                playerDb.ids = new List<ulong>();
+                            foreach (var element3 in obj.result.items)
                             {
-                                receivedItems.Add(schemaItemsByIndex[element3.defindex]);
+                                playerDb.ids.Add(element3.id);
+                                playerDb.defindex.Add(element3.defindex);
                             }
+                            playerDb.timestamp = DateTime.Now;
+                            IDFiles.StoreObjectForId(ulong.Parse(element.Key), "player.json", this, playerDb);
                         }
-                        for (var i = 0; i < playerDb.ids.Count; i++)
+                        else
                         {
-                            var element3 = playerDb.ids[i];
-                            if (!newCache.Contains(element3))
+                            var receivedItems = new List<TF2SchemaItem>();
+                            var lostItems = new List<TF2SchemaItem>();
+                            var newCache = new List<ulong>();
+                            var newDefindexCache = new List<ulong>();
+                            foreach (var element3 in obj.result.items)
                             {
-                                lostItems.Add(schemaItemsByIndex[playerDb.defindex[i]]);
-                            }
-                        }
-                        if (receivedItems.Count > 0)
-                        {
-                            /*
-                            var text = username + " has received the following items in TF2:" + Environment.NewLine;*/
-                            var text = "";
-                            foreach (var item in receivedItems)
-                            {
-                                if (item.item_description != null && item.item_description != "")
+                                newCache.Add(element3.id);
+                                newDefindexCache.Add(element3.defindex);
+                                if (!playerDb.ids.Contains(element3.id))
                                 {
-                                    text += "**" + item.item_name + "**" + " - " + item.item_description + Environment.NewLine;
-                                }
-                                else
-                                {
-                                    text += "**" + item.item_name + "**" + Environment.NewLine;
+                                    receivedItems.Add(schemaItemsByIndex[element3.defindex]);
                                 }
                             }
-                            myPending.receivedItems = text;
-                            //(bot._client.GetChannel(ulong.Parse(servid.trackingChannelID)) as IMessageChannel).SendMessageAsync(text);
-                        }
-                        if (lostItems.Count > 0)
-                        {
-                            //var text = username + " has lost the following items in TF2:" + Environment.NewLine;
-                            var text = "";
-                            foreach (var item in lostItems)
+                            for (var i = 0; i < playerDb.ids.Count; i++)
                             {
-                                if (item.item_description != null && item.item_description != "")
+                                var element3 = playerDb.ids[i];
+                                if (!newCache.Contains(element3))
                                 {
-                                    text += "**" + item.item_name + "**" + " - " + item.item_description + Environment.NewLine;
-                                }
-                                else
-                                {
-                                    text += "**" + item.item_name + "**" + Environment.NewLine;
+                                    lostItems.Add(schemaItemsByIndex[playerDb.defindex[i]]);
                                 }
                             }
-                            myPending.lostItems = text;
-                            //(bot._client.GetChannel(ulong.Parse(servid.trackingChannelID)) as IMessageChannel).SendMessageAsync(text);
+                            if (receivedItems.Count > 0)
+                            {
+                                /*
+                                var text = username + " has received the following items in TF2:" + Environment.NewLine;*/
+                                var text = "";
+                                foreach (var item in receivedItems)
+                                {
+                                    if (item.item_description != null && item.item_description != "")
+                                    {
+                                        text += "**" + item.item_name + "**" + " - " + item.item_description + Environment.NewLine;
+                                    }
+                                    else
+                                    {
+                                        text += "**" + item.item_name + "**" + Environment.NewLine;
+                                    }
+                                }
+                                myPending.receivedItems = text;
+                                //(bot._client.GetChannel(ulong.Parse(servid.trackingChannelID)) as IMessageChannel).SendMessageAsync(text);
+                            }
+                            if (lostItems.Count > 0)
+                            {
+                                //var text = username + " has lost the following items in TF2:" + Environment.NewLine;
+                                var text = "";
+                                foreach (var item in lostItems)
+                                {
+                                    if (item.item_description != null && item.item_description != "")
+                                    {
+                                        text += "**" + item.item_name + "**" + " - " + item.item_description + Environment.NewLine;
+                                    }
+                                    else
+                                    {
+                                        text += "**" + item.item_name + "**" + Environment.NewLine;
+                                    }
+                                }
+                                myPending.lostItems = text;
+                                //(bot._client.GetChannel(ulong.Parse(servid.trackingChannelID)) as IMessageChannel).SendMessageAsync(text);
+                            }
+                            playerDb.defindex = newDefindexCache;
+                            playerDb.ids = newCache;
+                            playerDb.timestamp = DateTime.Now;
+                            IDFiles.StoreObjectForId(ulong.Parse(element.Key), "player.json", this, playerDb);
+                            //(bot._client.GetChannel(ulong.Parse(arguments[0])) as IMessageChannel).SendMessageAsync(arguments[1]);
                         }
-                        playerDb.defindex = newDefindexCache;
-                        playerDb.ids = newCache;
-                        playerDb.timestamp = DateTime.Now;
-                        IDFiles.StoreObjectForId(ulong.Parse(element.Key), "player.json", this, playerDb);
-                        //(bot._client.GetChannel(ulong.Parse(arguments[0])) as IMessageChannel).SendMessageAsync(arguments[1]);
                     }
                 }
             }
-            foreach (var element in bot._client.Guilds)
+            foreach (var element in Program._client.Guilds)
             {
                 var servid = IDFiles.ReturnObjectForId<TF2ServerDatabase>(element.Id, "server.json", this);
                 if (servid.trackingChannelID != null && servid.trackingChannelID != "")
@@ -268,13 +270,13 @@ namespace TF2Module
                             {
                                 var text = user.Username + " has received the following items in TF2:" + Environment.NewLine;
                                 text += pend.receivedItems;
-                                (bot._client.GetChannel(ulong.Parse(servid.trackingChannelID)) as IMessageChannel).SendMessageAsync(text);
+                                (Program._client.GetChannel(ulong.Parse(servid.trackingChannelID)) as IMessageChannel).SendMessageAsync(text);
                             }
                             if (pend.lostItems != null && pend.lostItems != "")
                             {
                                 var text = user.Username + " has lost the following items in TF2:" + Environment.NewLine;
                                 text += pend.lostItems;
-                                (bot._client.GetChannel(ulong.Parse(servid.trackingChannelID)) as IMessageChannel).SendMessageAsync(text);
+                                (Program._client.GetChannel(ulong.Parse(servid.trackingChannelID)) as IMessageChannel).SendMessageAsync(text);
                             }
                         }
                     }
@@ -407,7 +409,7 @@ namespace TF2Module
                 }
         public override void Unload()
         {
-            bot.RemoveCommand("tf2");
+            Program.RemoveCommand("tf2");
         }
     }
 }

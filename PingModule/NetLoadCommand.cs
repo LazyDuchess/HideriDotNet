@@ -30,9 +30,9 @@ namespace HideriModules
         {
             return true;
         }
-        public override bool Run(Program bot, string[] arguments, MessageWrapper message)
+        public override bool Run( string[] arguments, MessageWrapper message)
         {
-            if (base.Run( bot, arguments, message))
+            if (base.Run( arguments, message))
             {
                 if (Path.GetExtension(arguments[0]) != ".zip")
                 {
@@ -52,7 +52,7 @@ namespace HideriModules
                     return false;
                 }
                 message.Channel.SendMessageAsync("Download successful, extracting module...");
-                var result = bot.UnloadModule(Path.GetFileNameWithoutExtension(arguments[0]));
+                var result = Program.UnloadModule(Path.GetFileNameWithoutExtension(arguments[0]));
                 if (result)
                 {
                     message.Channel.SendMessageAsync("Found module already loaded with the same name, unloaded.");
@@ -74,7 +74,7 @@ namespace HideriModules
                 }
                 File.Delete(Path.Combine(Directory.GetCurrentDirectory(), "Modules/" + filename));
                 message.Channel.SendMessageAsync("Extraction successful, loading module...");
-                result = bot.LoadModule(Path.GetFileNameWithoutExtension(arguments[0]));
+                result = Program.LoadModule(Path.GetFileNameWithoutExtension(arguments[0]));
                 if (result)
                     message.Channel.SendMessageAsync("Module loaded.");
                 else

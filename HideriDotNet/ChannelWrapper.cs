@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace HideriDotNet
 {
@@ -30,7 +31,13 @@ namespace HideriDotNet
             if (!headless)
                 channel.SendMessageAsync(text);
             else
+            {
                 Console.WriteLine(text);
+                var js = new ConsolePacket();
+                js.packet = 0;
+                js.text = text;
+                Program.wssv.WebSocketServices.Broadcast(JsonConvert.SerializeObject(js));
+            }
         }
     }
 }

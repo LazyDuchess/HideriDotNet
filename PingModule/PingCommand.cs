@@ -18,22 +18,22 @@ namespace HideriModules
         {
             return true;
         }
-        async Task sendModules(MessageWrapper message, Program bot)
+        async Task sendModules(MessageWrapper message)
         {
             if (message.headless)
                 message.Channel.SendMessageAsync("Loaded modules:");
             else
                 await message.Channel.channel.SendMessageAsync("Loaded modules:");
-            foreach (var element in bot.modules)
+            foreach (var element in Program.modules)
             {
                 message.Channel.SendMessageAsync("[" + element.Key + "] " + element.Value.data.name + " - " + element.Value.data.description + " by " + element.Value.data.author);
             }
         }
-        public override bool Run( Program bot, string[] arguments, MessageWrapper message)
+        public override bool Run(  string[] arguments, MessageWrapper message)
         {
-            if (base.Run( bot, arguments, message))
+            if (base.Run(  arguments, message))
             {
-                sendModules(message, bot);
+                sendModules(message);
                 return true;
             }
             return false;

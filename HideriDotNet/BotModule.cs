@@ -15,7 +15,7 @@ namespace HideriDotNet
         public ModuleData data;
 
         //Execute on module load
-        public virtual void Initialize(Program botCore)
+        public virtual void Initialize()
         {
 
         }

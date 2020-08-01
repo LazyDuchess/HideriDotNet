@@ -28,9 +28,9 @@ namespace BasicModule
             return "Show bot's console window.";
         }
 
-        public override bool Run(Program bot, string[] arguments, MessageWrapper message)
+        public override bool Run( string[] arguments, MessageWrapper message)
         {
-            if (base.Run(bot, arguments, message))
+            if (base.Run( arguments, message))
             {
                 var handle = GetConsoleWindow();
 

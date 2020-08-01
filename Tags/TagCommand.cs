@@ -55,7 +55,7 @@ namespace Tags
             }
         }
 
-        public override bool Run( Program bot, string[] arguments, MessageWrapper message)
+        public override bool Run( string[] arguments, MessageWrapper message)
         {
             if (arguments.Length >= 1)
             {
@@ -84,7 +84,7 @@ namespace Tags
                         if (arguments.Length <= 2)
                             message.Channel.SendMessageAsync("Can't add an empty tag.");
                         else
-                            TagsModule.database.tags[arguments[1]] = new Tag("Bot", "Console", "No ID", arguments[2]);
+                            TagsModule.database.tags[arguments[1]] = new Tag(message.Author.Username, message.Author.Discriminator, message.Author.Id.ToString(), arguments[2]);
                     }
                     else
                     {
@@ -113,7 +113,7 @@ namespace Tags
                 case "edit":
                     if (TagsModule.database.tags.ContainsKey(arguments[1]))
                     {
-                        if (message.headless == false && TagsModule.database.tags[arguments[1]].ownerID != message.message.Author.Id.ToString())
+                        if (TagsModule.database.tags[arguments[1]].ownerID != message.Author.Id.ToString())
                         {
                             message.Channel.SendMessageAsync("That tag is not yours.");
                             return false;
@@ -152,7 +152,7 @@ namespace Tags
                 case "delete":
                     if (TagsModule.database.tags.ContainsKey(arguments[1]))
                     {
-                        if (message.headless == false && TagsModule.database.tags[arguments[1]].ownerID != message.message.Author.Id.ToString())
+                        if (TagsModule.database.tags[arguments[1]].ownerID != message.Author.Id.ToString())
                         {
                             message.Channel.SendMessageAsync("That tag is not yours.");
                             return false;

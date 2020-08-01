@@ -14,11 +14,11 @@ namespace BasicModule
             return "Display latency of the bot.";
         }
 
-        public override bool Run(Program bot, string[] arguments, MessageWrapper message)
+        public override bool Run( string[] arguments, MessageWrapper message)
         {
-            if (base.Run(bot, arguments, message))
+            if (base.Run( arguments, message))
             {
-                message.Channel.SendMessageAsync("Latency is ``" + bot._client.Latency.ToString() + "ms``");
+                message.Channel.SendMessageAsync("Latency is ``" + Program._client.Latency.ToString() + "ms``");
                 return true;
             }
             return false;

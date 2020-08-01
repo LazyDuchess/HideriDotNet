@@ -18,14 +18,14 @@ namespace HideriDotNet
             return "Shutdown the bot.";
         }
 
-        public override bool Run(Program bot, string[] arguments, MessageWrapper message)
+        public override bool Run( string[] arguments, MessageWrapper message)
         {
-            if (base.Run(bot, arguments, message))
+            if (base.Run( arguments, message))
             {
                 //Execute on stop delegate
-                bot.onStop?.Invoke(message);
+                Program.onStop?.Invoke(message);
                 //Stop the bot.
-                bot.Stop();
+                Program.Stop();
                 return true;
             }
             return false;

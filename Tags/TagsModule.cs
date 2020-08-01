@@ -13,18 +13,16 @@ namespace Tags
     {
         public static TagsModule instance;
         public static TagDatabase database;
-        Program bot;
-        public override void Initialize(Program botCore)
+        public override void Initialize()
         {
             instance = this;
             if (File.Exists(Path.Combine(directory, "database.json")))
                 database = JsonConvert.DeserializeObject<TagDatabase>(File.ReadAllText(Path.Combine(directory, "database.json")));
             else
                 database = new TagDatabase();
-            bot = botCore;
             var tagCommand = new TagCommand();
-            botCore.AddCommand("t", new TagCommand());
-            botCore.AddCommand("tag", new TagCommand());
+            Program.AddCommand("t", new TagCommand());
+            Program.AddCommand("tag", new TagCommand());
         }
 
         public static void SaveTags()
@@ -34,8 +32,8 @@ namespace Tags
 
         public override void Unload()
         {
-            bot.RemoveCommand("t");
-            bot.RemoveCommand("tag");
+            Program.RemoveCommand("t");
+            Program.RemoveCommand("tag");
             File.WriteAllText(Path.Combine(directory, "database.json"), JsonConvert.SerializeObject(database));
         }
 

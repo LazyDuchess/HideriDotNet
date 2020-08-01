@@ -84,11 +84,15 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="websocket-sharp-standard, Version=1.0.3.0, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSocketSharp.Standard.1.0.3\lib\netstandard2.0\websocket-sharp-standard.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BotCommand.cs" />
     <Compile Include="BotModule.cs" />
     <Compile Include="BotSettings.cs" />
+    <Compile Include="UserWrapper.cs" />
     <Compile Include="ChannelWrapper.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -103,6 +107,7 @@
     <Compile Include="IDFiles.cs" />
     <Compile Include="StopCommand.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="WebPacket.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

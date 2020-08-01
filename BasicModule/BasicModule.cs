@@ -20,8 +20,7 @@ namespace BasicModule
     public class BasicModule : BotModule
     {
         BasicSettings config;
-        Program bot;
-        public override void Initialize(Program botCore)
+        public override void Initialize()
         {
             var configFile = Path.Combine(directory, "config.json");
             if (File.Exists(configFile))
@@ -31,14 +30,13 @@ namespace BasicModule
                 config = new BasicSettings();
                 File.WriteAllText(configFile, JsonConvert.SerializeObject(config));
             }
-            bot = botCore;
-            bot.onUnknownCommand += UnknownCommand;
-            bot.onStop += StopCommand;
-            bot.onMessage += MessageLog;
-            bot.AddCommand("help", new HelpCommand());
-            bot.AddCommand("ping", new LatencyCommand());
-            bot.AddCommand("tell", new TellCommand());
-            bot.AddCommand("show", new ShowCommand());
+            Program.onUnknownCommand += UnknownCommand;
+            Program.onStop += StopCommand;
+            Program.onMessage += MessageLog;
+            Program.AddCommand("help", new HelpCommand());
+            Program.AddCommand("ping", new LatencyCommand());
+            Program.AddCommand("tell", new TellCommand());
+            Program.AddCommand("show", new ShowCommand());
         }
 
         void UnknownCommand(MessageWrapper message)
@@ -47,7 +45,7 @@ namespace BasicModule
             {
                 var lastSuggest = "";
                 var lastScore = 0;
-                foreach (var element in bot.commands)
+                foreach (var element in Program.commands)
                 {
                     var split = message.Content.Split(' ');
                     var cmd = split[0].Substring(1).ToLowerInvariant();
@@ -87,35 +85,35 @@ namespace BasicModule
                 }
                 if (lastSuggest != "")
                 {
-                    message.Channel.SendMessageAsync(String.Format(config.CommandSuggestMessage, bot.botSettings.defaultPrefix, lastSuggest));
+                    message.Channel.SendMessageAsync(String.Format(config.CommandSuggestMessage, Program.botSettings.defaultPrefix, lastSuggest));
                     return;
                 }
             }
-            message.Channel.SendMessageAsync(String.Format(config.UnknownCommandMessage,bot.botSettings.defaultPrefix));
+            message.Channel.SendMessageAsync(String.Format(config.UnknownCommandMessage, Program.botSettings.defaultPrefix));
         }
 
         void StopCommand(MessageWrapper message)
         {
-            message.Channel.SendMessageAsync(String.Format(config.StopMessage, bot.botSettings.defaultPrefix));
+            message.Channel.SendMessageAsync(String.Format(config.StopMessage, Program.botSettings.defaultPrefix));
         }
 
         void MessageLog(MessageWrapper message)
         {
             if (!message.headless && config.logMessages)
             {
-                Console.WriteLine("[("+ message.Channel.channel.Id.ToString() +")" + message.Channel.channel.Name + "] " + message.message.Author.Username + " : " + message.Content);
+                Program.ConsoleWriteLine("[("+ message.Channel.channel.Id.ToString() +")" + message.Channel.channel.Name + "] " + message.message.Author.Username + " : " + message.Content);
             }
         }
 
         public override void Unload()
         {
-            bot.onUnknownCommand -= UnknownCommand;
-            bot.onStop -= StopCommand;
-            bot.onMessage -= MessageLog;
-            bot.RemoveCommand("help");
-            bot.RemoveCommand("ping");
-            bot.RemoveCommand("tell");
-            bot.RemoveCommand("show");
+            Program.onUnknownCommand -= UnknownCommand;
+            Program.onStop -= StopCommand;
+            Program.onMessage -= MessageLog;
+            Program.RemoveCommand("help");
+            Program.RemoveCommand("ping");
+            Program.RemoveCommand("tell");
+            Program.RemoveCommand("show");
         }
     }
 }

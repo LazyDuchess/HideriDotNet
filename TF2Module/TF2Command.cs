@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Discord;
 using HideriDotNet;
 using HideriDotNet.Database;
+using TF2Module.SchemaItems;
 
 namespace TF2Module
 {
@@ -31,9 +32,9 @@ namespace TF2Module
         {
             return "[item/steam/track] [Name/64 bit Steam ID/Track your inventory]";
         }
-        public override bool Run(Program bot, string[] arguments, MessageWrapper message)
+        public override bool Run( string[] arguments, MessageWrapper message)
         {
-            if (base.Run(bot, arguments, message))
+            if (base.Run( arguments, message))
             {
                 if (arguments.Length < 1)
                 {
@@ -45,9 +46,20 @@ namespace TF2Module
                     case "item":
                         if (arguments.Length > 1)
                         {
-                            if (TF2Module.schemaItemsByName.ContainsKey(arguments[1].ToLowerInvariant()))
+                            if (TF2Module.schemaItemsByName.ContainsKey(arguments[1].ToLowerInvariant()) || arguments[1].ToLowerInvariant() == "taunt: pat duchessi")
                             {
-                                var item = TF2Module.schemaItemsByName[arguments[1].ToLowerInvariant()];
+                                TF2SchemaItem item;
+                                if (arguments[1].ToLowerInvariant() == "taunt: pat duchessi")
+                                {
+                                    item = new TF2SchemaItem()
+                                    {
+                                        item_name = "Taunt: Pat Duchessi",
+                                        item_description = "All Class Taunt",
+                                        image_url_large = "https://cdn.discordapp.com/attachments/677613612671696901/738141766363906048/tauntpatduchessi.png"
+                                    };
+                                }
+                                else
+                                    item = TF2Module.schemaItemsByName[arguments[1].ToLowerInvariant()];
                                 if (message.headless)
                                 {
                                     message.Channel.SendMessageAsync("Item name: " + item.item_name);
@@ -77,14 +89,9 @@ namespace TF2Module
                         }
 
                     case "steam":
-                        if (message.headless)
-                        {
-                            message.Channel.SendMessageAsync("Can't perform this action from console.");
-                            return false;
-                        }
                         if (arguments.Length > 1)
                         {
-                            TF2Module.database.userIDtoSteamID[message.message.Author.Id.ToString()] = arguments[1];
+                            TF2Module.database.userIDtoSteamID[message.Author.Id.ToString()] = arguments[1];
                             TF2Module.Save();
                             message.Channel.SendMessageAsync("Registered " + arguments[1] + " as the 64 bit Steam ID of your account.");
                             return true;
@@ -95,17 +102,12 @@ namespace TF2Module
                             return false;
                         }
                     case "ref":
-                        if (message.headless)
-                        {
-                            message.Channel.SendMessageAsync("Can't perform this action from console.");
-                            return false;
-                        }
-                        if (!TF2Module.database.userIDtoSteamID.ContainsKey(message.message.Author.Id.ToString()))
+                        if (!TF2Module.database.userIDtoSteamID.ContainsKey(message.Author.Id.ToString()))
                         {
                             message.Channel.SendMessageAsync("Register your 64 bit Steam ID with the steam command first.");
                             return false;
                         }
-                        var dbp = IDFiles.ReturnObjectForId<TF2PlayerDatabase>(message.message.Author.Id, "player.json", TF2Module.instance);
+                        var dbp = IDFiles.ReturnObjectForId<TF2PlayerDatabase>(message.Author.Id, "player.json", TF2Module.instance);
                         if (!dbp.cached)
                         {
                             message.Channel.SendMessageAsync("I still haven't cached your inventory. Please wait a few minutes.");

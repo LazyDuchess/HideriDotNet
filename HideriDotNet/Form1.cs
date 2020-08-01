@@ -21,7 +21,7 @@ namespace HideriDotNet
         
         public void Update()
         {
-            this.Text = "Hideri Bot [Running " + botProgram.botSettings.botName + "] ["+botProgram.modules.Count.ToString()+" modules loaded]";
+            this.Text = "Hideri Bot [Running " + Program.botSettings.botName + "] ["+ Program.modules.Count.ToString()+" modules loaded]";
         }
 
         protected override void OnFormClosing(System.Windows.Forms.FormClosingEventArgs e)

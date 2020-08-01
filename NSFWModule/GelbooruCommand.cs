@@ -36,9 +36,9 @@ namespace NSFWModule
             return "Search for images in Gelbooru";
         }
 
-        public override bool Run(Program bot, string[] arguments, MessageWrapper message)
+        public override bool Run( string[] arguments, MessageWrapper message)
         {
-            if (base.Run(bot, arguments, message))
+            if (base.Run( arguments, message))
             {
                 var query = arguments[0].ToLowerInvariant().Trim();
                 

@@ -36,9 +36,9 @@ namespace ImageModule
             return "Retrieve an user's avatar";
         }
 
-        public override bool Run(Program bot, string[] arguments, MessageWrapper message)
+        public override bool Run( string[] arguments, MessageWrapper message)
         {
-            if (base.Run(bot, arguments, message))
+            if (base.Run( arguments, message))
             {
                 if (message.headless)
                 {
@@ -50,13 +50,13 @@ namespace ImageModule
                     message.Channel.SendMessageAsync(message.message.Author.GetAvatarUrl(ImageFormat.Auto, 2048));
                     return true;
                 }
-                doThing(bot, arguments, message);
+                doThing( arguments, message);
                 return true;
             }
             return false;
         }
 
-        async Task doThing(Program bot, string[] arguments, MessageWrapper message)
+        async Task doThing( string[] arguments, MessageWrapper message)
         {
             if (arguments.Length == 0)
             {

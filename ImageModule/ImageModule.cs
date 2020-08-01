@@ -9,16 +9,14 @@ namespace ImageModule
 {
     public class ImageModule : BotModule
     {
-        Program bot;
-        public override void Initialize(Program botCore)
+        public override void Initialize()
         {
-            bot = botCore;
-            botCore.AddCommand("avatar", new AvatarCommand());
+            Program.AddCommand("avatar", new AvatarCommand());
         }
 
         public override void Unload()
         {
-            bot.RemoveCommand("avatar");
+            Program.RemoveCommand("avatar");
         }
     }
 }

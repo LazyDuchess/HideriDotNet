@@ -9,15 +9,14 @@ namespace NSFWModule
 {
     public class NSFWModule : BotModule
     {
-        public static Program bot;
-        public override void Initialize(Program botCore)
+        public override void Initialize()
         {
-            botCore.AddCommand("gelbooru", new GelbooruCommand());
+            Program.AddCommand("gelbooru", new GelbooruCommand());
         }
 
         public override void Unload()
         {
-            bot.RemoveCommand("gelbooru");
+            Program.RemoveCommand("gelbooru");
         }
     }
 }

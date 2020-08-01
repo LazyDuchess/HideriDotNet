@@ -87,22 +87,20 @@ namespace HideriDotNet
             return false;
         }
         //Perform command run check, can override
-        public virtual bool CanRunCommand( Program bot, string[] arguments, MessageWrapper message)
+        public virtual bool CanRunCommand( string[] arguments, MessageWrapper message)
         {
             if (IsOwnerOnly())
             {
-                if (message.headless) //Console
-                    return true;
-                if (bot.botSettings.owners.Contains(message.message.Author.Id.ToString())) //Bot owner
+                if (Program.botSettings.owners.Contains(message.Author.Id.ToString())) //Bot owner
                     return true;
                 return false;
             }
             return true;
         }
         //Run the command!
-        public virtual bool Run( Program bot, string[] arguments, MessageWrapper message)
+        public virtual bool Run( string[] arguments, MessageWrapper message)
         {
-            if (!CanRunCommand( bot, arguments, message))
+            if (!CanRunCommand( arguments, message))
             {
                 message.Channel.SendMessageAsync("Can't execute that command in this context.");
                 return false;

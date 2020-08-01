@@ -14,14 +14,14 @@ namespace BasicModule
             return "Display help.";
         }
 
-        public override bool Run(Program bot, string[] arguments, MessageWrapper message)
+        public override bool Run( string[] arguments, MessageWrapper message)
         {
-            if (base.Run(bot, arguments, message))
+            if (base.Run( arguments, message))
             {
                 var builtstring = "";
-                foreach (var element in bot.commands)
+                foreach (var element in Program.commands)
                 {
-                    builtstring += bot.botSettings.defaultPrefix + element.Key;
+                    builtstring += Program.botSettings.defaultPrefix + element.Key;
                     if (element.Value.GetUsage() != "")
                         builtstring += " " + element.Value.GetUsage();
                     if (element.Value.GetHelp() != "")

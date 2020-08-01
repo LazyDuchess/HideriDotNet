@@ -7,27 +7,112 @@ using System.Windows.Forms;
 using Discord;
 using Discord.WebSocket;
 using System.IO;
+using System.Configuration;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Newtonsoft.Json;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using WebSocketSharp;
+using WebSocketSharp.Net;
+using WebSocketSharp.Server;
+using System.Net;
 
 namespace HideriDotNet
 {
+    public class RCONUser
+    {
+        public string Username;
+        public string Discriminator;
+        public ulong Id;
+    }
+    public class RCONSettings
+    {
+        public bool enabled = false;
+        public string ip = "192.168.0.9";
+        public int port = 27015;
+        public bool secure = true;
+        public string certificate = "rcon.pfx";
+        public string certificatePassword = "1234";
+    }
+    public class RCON : WebSocketBehavior
+    {
+        public static Dictionary<string, RCONUser> RCONUsersByToken = new Dictionary<string, RCONUser>();
+        //private string _suffix;
+
+        public RCON()
+        {
+            
+        }
+
+        protected override void OnMessage(MessageEventArgs e)
+        {
+            //Console.WriteLine("Packet: "+e.Data);
+            var pack = JsonConvert.DeserializeObject<WebPacket>(e.Data);
+            switch(pack.packet)
+            {
+                case 0:
+                    if (!RCONUsersByToken.ContainsKey(pack.token))
+                        return;
+                    var cs = JsonConvert.DeserializeObject<ConsolePacket>(e.Data);
+                    Console.WriteLine("From RCON Connection: " + cs.text);
+                    var console = cs.text;
+                    var msg = new MessageWrapper(console);
+                    var rconuser = RCONUsersByToken[pack.token];
+                    var us = new UserWrapper(rconuser.Username, rconuser.Discriminator, rconuser.Id);
+                    msg.Author = us;
+                    if (console.Length >= Program.botSettings.defaultPrefix.Length)
+                    {
+                        var args = console.Split(' ');
+                        var cmd = args[0];
+                        if (cmd.Substring(0, Program.botSettings.defaultPrefix.Length) == Program.botSettings.defaultPrefix)
+                        {
+                            cmd = cmd.Substring(Program.botSettings.defaultPrefix.Length);
+                            if (Program.commands.ContainsKey(cmd))
+                            {
+                                Program.commands[cmd].Run(Program.commands[cmd].splitArgs(console), msg);
+                            }
+                            else
+                            {
+                                Program.onUnknownCommand?.Invoke(msg);
+                            }
+                        }
+                    }
+                    break;
+                case 2:
+                    var returnPacket = new TokenReturnPacket();
+                    returnPacket.packet = 1;
+                    if (RCONUsersByToken.ContainsKey(pack.token))
+                    {
+                        returnPacket.status = true;
+                        returnPacket.username = RCONUsersByToken[pack.token].Username;
+                    }
+                    else
+                        returnPacket.status = false;
+                    Send(JsonConvert.SerializeObject(returnPacket));
+                    break;
+            }
+            
+        }
+    }
     public class Program
     {
+        public static RCONSettings rconSettings = new RCONSettings();
+        public static UserWrapper ConsoleAuthor = new UserWrapper("Lazy Duchess", "6398", 167668839323009024);
         public static bool Debug = false;
         public delegate void MessageEvent(MessageWrapper message);
 
-        public MessageEvent onMessage;
-        public MessageEvent onUnknownCommand;
-        public MessageEvent onStop;
+        public static MessageEvent onMessage;
+        public static MessageEvent onUnknownCommand;
+        public static MessageEvent onStop;
 
         public Form1 form;
-        public Dictionary<string, BotModule> modules = new Dictionary<string, BotModule>();
-        public Dictionary<string, BotCommand> commands = new Dictionary<string, BotCommand>();
-        public BotSettings botSettings;
+        public static Dictionary<string, BotModule> modules = new Dictionary<string, BotModule>();
+        public static Dictionary<string, BotCommand> commands = new Dictionary<string, BotCommand>();
+        public static BotSettings botSettings;
         public Thread uiThread;
-        public DiscordSocketClient _client;
+        public static DiscordSocketClient _client;
+        public static WebSocketServer wssv;
         //public ThreadStart 
 
         [DllImport("kernel32.dll")]
@@ -45,13 +130,59 @@ namespace HideriDotNet
         [STAThread]
         static void Main(string[] args)
         {
-            
+            if (File.Exists("rconusers.json"))
+            {
+                try
+                {
+                    Console.WriteLine("Loading RCON Users from rconusers.json.");
+                    RCON.RCONUsersByToken = JsonConvert.DeserializeObject<Dictionary<string, RCONUser>>(File.ReadAllText("rconusers.json"));
+                    Console.WriteLine("RCON Users loaded.");
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine("Failed to load RCON Users. Exception:"+Environment.NewLine+e.ToString());
+                }
+            }
+            else
+            {
+                Console.WriteLine("Can't find rconusers.json, skipping loading of RCON users.");
+            }
+            if (File.Exists("rcon.json"))
+            {
+                try
+                {
+                    Console.WriteLine("Loading RCON settings from rcon.json.");
+                    rconSettings = JsonConvert.DeserializeObject<RCONSettings>(File.ReadAllText("rcon.json"));
+                    Console.WriteLine("RCON settings loaded.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Failed to load RCON settings. Exception:" + Environment.NewLine + e.ToString());
+                }
+            }
+            else
+            {
+                File.WriteAllText("rcon.json", JsonConvert.SerializeObject(rconSettings));
+                Console.WriteLine("Can't find rcon.json, loading default RCON settings.");
+            }
+            if (rconSettings.enabled)
+            {
+                wssv = new WebSocketServer(IPAddress.Parse(rconSettings.ip), rconSettings.port, rconSettings.secure);
+                wssv.AddWebSocketService<RCON>("/RCON");
+                if (rconSettings.secure)
+                {
+                    wssv.SslConfiguration.ServerCertificate =
+          new X509Certificate2(rconSettings.certificate, rconSettings.certificatePassword);
+                }
+                wssv.Start();
+                Console.WriteLine("Starting rcon server at ws"+ (rconSettings.secure ? "s" : "") +"://" + rconSettings.ip + ":" + rconSettings.port.ToString() + "/RCON");
+            }
             var program = new Program();
-            program.AddCommand("stop", new StopCommand());
+            AddCommand("stop", new StopCommand());
             var moduleFolders = Directory.GetDirectories(Path.Combine(Directory.GetCurrentDirectory(), "Modules"));
             foreach(var element in moduleFolders)
             {
-                program.LoadModule(Path.GetFileName(element));
+                LoadModule(Path.GetFileName(element));
             }
             //program.LoadModule("PingModule");
             var loadedConfig = false;
@@ -59,7 +190,7 @@ namespace HideriDotNet
             {
                 try
                 {
-                    program.botSettings = JsonConvert.DeserializeObject<BotSettings>(File.ReadAllText("config.json"));
+                    botSettings = JsonConvert.DeserializeObject<BotSettings>(File.ReadAllText("config.json"));
                     loadedConfig = true;
                 }
                 catch(Exception e)
@@ -72,12 +203,12 @@ namespace HideriDotNet
             if (!loadedConfig)
             {
                 Console.WriteLine("Creating a new settings file");
-                program.botSettings = new BotSettings();
-                var newSettings = JsonConvert.SerializeObject(program.botSettings);
+                botSettings = new BotSettings();
+                var newSettings = JsonConvert.SerializeObject(botSettings);
                 File.WriteAllText("config.json", newSettings);
                 loadedConfig = true;
             }
-            Console.WriteLine("Default prefix is " + program.botSettings.defaultPrefix);
+            Console.WriteLine("Default prefix is " + botSettings.defaultPrefix);
             if (args.Contains("-invisible"))
             {
                 var handle = GetConsoleWindow();
@@ -114,7 +245,7 @@ namespace HideriDotNet
             Console.WriteLine("Exiting");
         }
 
-        public bool UnloadModule(string moduleName)
+        public static bool UnloadModule(string moduleName)
         {
             Console.WriteLine("Unloading module " + moduleName);
             if (modules.ContainsKey(moduleName))
@@ -129,7 +260,25 @@ namespace HideriDotNet
             
             return false;
         }
-        public bool LoadModule(string moduleName)
+        public static void ConsoleWrite(string text)
+        {
+            Console.Write(text);
+            var js = new ConsolePacket();
+            js.packet = 0;
+            js.text = text;
+            if (rconSettings.enabled)
+                wssv.WebSocketServices.Broadcast(JsonConvert.SerializeObject(js));
+        }
+        public static void ConsoleWriteLine(string text)
+        {
+            Console.WriteLine(text);
+            var js = new ConsolePacket();
+            js.packet = 0;
+            js.text = text;
+            if (rconSettings.enabled)
+                wssv.WebSocketServices.Broadcast(JsonConvert.SerializeObject(js));
+        }
+        public static bool LoadModule(string moduleName)
         {
             
             Console.WriteLine("Loading module " + Path.Combine(Directory.GetCurrentDirectory(), "Modules/" + moduleName + "/" + moduleName + ".dll"));
@@ -145,8 +294,8 @@ namespace HideriDotNet
                 {
                     runnable.data = moduleData;
                     runnable.directory = Path.Combine(Directory.GetCurrentDirectory(), "Modules/" + moduleName);
-                    this.modules[moduleName] = runnable;
-                    runnable.Initialize(this);
+                    modules[moduleName] = runnable;
+                    runnable.Initialize();
                     Console.WriteLine("Module loaded successfully!");
                     Update();
                     return true;
@@ -162,22 +311,23 @@ namespace HideriDotNet
             }
         }
 
-        public void AddCommand(string cmd, BotCommand command)
+        public static void AddCommand(string cmd, BotCommand command)
         {
             Console.WriteLine("Registering " + cmd + " command.");
             commands[cmd] = command;
         }
 
-        public void RemoveCommand(string command)
+        public static void RemoveCommand(string command)
         {
             if (commands.ContainsKey(command))
                 commands.Remove(command);
         }
 
-        public void Update()
+        public static void Update()
         {
+            /*
             if (form != null)
-                form.Update();
+                form.Update();*/
         }
         /*
         void UIThread()
@@ -209,13 +359,15 @@ namespace HideriDotNet
             _client.Ready += ReadyAsync;
             _client.MessageReceived += MessageReceivedAsync;
         }
-        public void Stop()
+        public static void Stop()
         {
             foreach(var element in modules)
             {
                 element.Value.CleanUp();
             }
-            this._client.Dispose();
+            _client.Dispose();
+            if (rconSettings.enabled)
+                wssv.Stop();
             Application.Exit();
         }
         public async Task MainAsync()
@@ -243,7 +395,7 @@ namespace HideriDotNet
                         cmd = cmd.Substring(botSettings.defaultPrefix.Length);
                         if (commands.ContainsKey(cmd))
                         {
-                            commands[cmd].Run(this, commands[cmd].splitArgs(console), new MessageWrapper(console));
+                            commands[cmd].Run( commands[cmd].splitArgs(console), new MessageWrapper(console));
                         }
                         else
                         {
@@ -290,7 +442,7 @@ namespace HideriDotNet
                     {
                     try
                     {
-                        commands[cmd].Run(this, commands[cmd].splitArgs(message.Content), new MessageWrapper(message));
+                        commands[cmd].Run( commands[cmd].splitArgs(message.Content), new MessageWrapper(message));
                     }
                     catch(Exception ex)
                     {

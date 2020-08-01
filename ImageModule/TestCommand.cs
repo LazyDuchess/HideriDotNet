@@ -17,9 +17,9 @@ namespace ImageModule
             return "IMAGE MODULE TEST!!!!!.";
         }
 
-        public override bool Run(Program bot, string[] arguments, MessageWrapper message)
+        public override bool Run( string[] arguments, MessageWrapper message)
         {
-            if (base.Run(bot, arguments, message))
+            if (base.Run( arguments, message))
             {
                 if (message.headless)
                     return false;

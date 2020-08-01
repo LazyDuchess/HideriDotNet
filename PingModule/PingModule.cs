@@ -9,24 +9,22 @@ namespace HideriModules
 {
     public class PingModule : BotModule
     {
-        Program bot;
-        public override void Initialize(Program botCore)
+        public override void Initialize()
         {
-            bot = botCore;
-            botCore.AddCommand("modules", new PingCommand());
-            botCore.AddCommand("unload", new UnloadCommand());
-            botCore.AddCommand("load", new LoadCommand());
-            botCore.AddCommand("netload", new NetLoadCommand());
-            botCore.AddCommand("reload", new ReloadCommand());
+            Program.AddCommand("modules", new PingCommand());
+            Program.AddCommand("unload", new UnloadCommand());
+            Program.AddCommand("load", new LoadCommand());
+            Program.AddCommand("netload", new NetLoadCommand());
+            Program.AddCommand("reload", new ReloadCommand());
         }
 
         public override void Unload()
         {
-            bot.RemoveCommand("modules");
-            bot.RemoveCommand("unload");
-            bot.RemoveCommand("load");
-            bot.RemoveCommand("netload");
-            bot.RemoveCommand("reload");
+            Program.RemoveCommand("modules");
+            Program.RemoveCommand("unload");
+            Program.RemoveCommand("load");
+            Program.RemoveCommand("netload");
+            Program.RemoveCommand("reload");
         }
     }
 }
