@@ -98,7 +98,7 @@ namespace HideriDotNet
     public class Program
     {
         public static RCONSettings rconSettings = new RCONSettings();
-        public static UserWrapper ConsoleAuthor = new UserWrapper("Lazy Duchess", "6398", 167668839323009024);
+        public static UserWrapper ConsoleAuthor;
         public static bool Debug = false;
         public delegate void MessageEvent(MessageWrapper message);
 
@@ -113,6 +113,7 @@ namespace HideriDotNet
         public Thread uiThread;
         public static DiscordSocketClient _client;
         public static WebSocketServer wssv;
+        public static bool loadedConfig = false;
         //public ThreadStart 
 
         [DllImport("kernel32.dll")]
@@ -185,7 +186,6 @@ namespace HideriDotNet
                 LoadModule(Path.GetFileName(element));
             }
             //program.LoadModule("PingModule");
-            var loadedConfig = false;
             if (File.Exists("config.json"))
             {
                 try
@@ -204,9 +204,7 @@ namespace HideriDotNet
             {
                 Console.WriteLine("Creating a new settings file");
                 botSettings = new BotSettings();
-                var newSettings = JsonConvert.SerializeObject(botSettings);
-                File.WriteAllText("config.json", newSettings);
-                loadedConfig = true;
+                
             }
             Console.WriteLine("Default prefix is " + botSettings.defaultPrefix);
             if (args.Contains("-invisible"))
@@ -417,7 +415,17 @@ namespace HideriDotNet
 
         private Task ReadyAsync()
         {
-
+            if (!loadedConfig)
+            {
+                ConsoleAuthor = new UserWrapper(_client.CurrentUser.Username, _client.CurrentUser.Discriminator, _client.CurrentUser.Id);
+                botSettings.defaultUsername = ConsoleAuthor.Username;
+                botSettings.defaultUserDiscriminator = ConsoleAuthor.Discriminator;
+                botSettings.defaultUserID = ConsoleAuthor.Id;
+                var newSettings = JsonConvert.SerializeObject(botSettings);
+                File.WriteAllText("config.json", newSettings);
+            }
+            else
+                ConsoleAuthor = new UserWrapper(botSettings.defaultUsername, botSettings.defaultUserDiscriminator, botSettings.defaultUserID);
             Console.WriteLine($"{_client.CurrentUser} is connected!");
 
             return Task.CompletedTask;

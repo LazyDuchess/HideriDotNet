@@ -13,5 +13,8 @@ namespace HideriDotNet
         public string botName = "Hideri";
         public string botToken = "-";
         public List<string> owners = new List<string>();
+        public ulong defaultUserID;
+        public string defaultUsername;
+        public string defaultUserDiscriminator;
     }
 }
