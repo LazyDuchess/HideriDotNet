@@ -11,7 +11,7 @@ namespace HideriDotNet
         public string token;
         public int packet;
     }
-    //Packet 0 - on receive on server parses as command to bot, on receive on client writes on console
+    //Packet 0 - on receive on server parses as command to bot, on receive on client writes on console | Packet 3 = on receive on client set the command input field to this
     class ConsolePacket : WebPacket
     {
         public string text;

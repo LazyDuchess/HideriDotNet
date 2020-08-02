@@ -8,6 +8,15 @@ using Discord.WebSocket;
 
 namespace HideriDotNet
 {
+    public class RCONInputFieldResult
+    {
+        [System.NonSerialized]
+        public static RCONInputFieldResult Empty = new RCONInputFieldResult();
+
+        public bool keepCommand = false;
+        public string[] keepArguments = new string[] { };
+        public string suffix = "";
+    }
     //Command class
     public abstract class BotCommand
     {
@@ -106,6 +115,11 @@ namespace HideriDotNet
                 return false;
             }
             return true;
+        }
+        //For RCON, how to alter the input field after sending a command through it. Return an empty string by default.
+        public virtual RCONInputFieldResult GetInputField(string[] arguments, MessageWrapper message)
+        {
+            return RCONInputFieldResult.Empty;
         }
 
     }

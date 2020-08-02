@@ -17,6 +17,17 @@ namespace HideriDotNet
         string username;
         string discriminator;
         ulong id;
+        string avatarurl;
+        public string AvatarURL
+        {
+            get
+            {
+                if (headless)
+                    return avatarurl;
+                else
+                    return user.GetAvatarUrl(Discord.ImageFormat.Auto, 2048);
+            }
+        }
         public string Username
         {
             get
@@ -56,12 +67,13 @@ namespace HideriDotNet
             this.user = user;
         }
 
-        public UserWrapper(string username, string discriminator, ulong id)
+        public UserWrapper(string username, string discriminator, ulong id, string avatar = "")
         {
             this.headless = true;
             this.username = username;
             this.discriminator = discriminator;
             this.id = id;
+            this.avatarurl = avatar;
         }
         /*
         public void SendMessageAsync(string text)

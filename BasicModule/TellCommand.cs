@@ -28,7 +28,7 @@ namespace BasicModule
             return true;
         }
 
-        async Task RunUserCommand( string[] arguments, MessageWrapper message)
+        async Task RunUserCommand(string[] arguments, MessageWrapper message)
         {
             IGuild guild = null;
             if (!message.headless && typeof(IGuildChannel).IsAssignableFrom(message.message.Channel.GetType()))
@@ -39,6 +39,14 @@ namespace BasicModule
             {
                 user2.SendMessageAsync(arguments[1]);
             }
+        }
+        public override RCONInputFieldResult GetInputField(string[] arguments, MessageWrapper message)
+        {
+            return new RCONInputFieldResult()
+            {
+                keepCommand = true,
+                keepArguments = new string[] { arguments[0] }
+            };
         }
         public override bool Run( string[] arguments, MessageWrapper message)
         {

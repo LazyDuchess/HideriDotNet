@@ -20,11 +20,22 @@ using System.Net;
 
 namespace HideriDotNet
 {
+    public class RCONConnection
+    {
+        public WebSocket socket;
+        public bool logged = false;
+        public string token = "";
+        public RCONConnection(WebSocket socket)
+        {
+            this.socket = socket;
+        }
+    }
     public class RCONUser
     {
         public string Username;
         public string Discriminator;
         public ulong Id;
+        public string AvatarURL = "";
     }
     public class RCONSettings
     {
@@ -34,6 +45,7 @@ namespace HideriDotNet
         public bool secure = true;
         public string certificate = "rcon.pfx";
         public string certificatePassword = "1234";
+        public bool autoUpdateUsers = false;
     }
     public class RCON : WebSocketBehavior
     {
@@ -44,7 +56,16 @@ namespace HideriDotNet
         {
             
         }
-
+        protected override void OnOpen()
+        {
+            Program.rconConnections[Context.WebSocket] = new RCONConnection(Context.WebSocket);
+            Console.WriteLine("There's a new RCON connection from " + Context.UserEndPoint.Address.ToString());
+        }
+        protected override void OnClose(CloseEventArgs e)
+        {
+            Program.rconConnections.Remove(Context.WebSocket);
+            Console.WriteLine("Dropped RCON connection from " + Context.UserEndPoint.Address.ToString());
+        }
         protected override void OnMessage(MessageEventArgs e)
         {
             //Console.WriteLine("Packet: "+e.Data);
@@ -60,6 +81,10 @@ namespace HideriDotNet
                     var msg = new MessageWrapper(console);
                     var rconuser = RCONUsersByToken[pack.token];
                     var us = new UserWrapper(rconuser.Username, rconuser.Discriminator, rconuser.Id);
+                    msg.Channel = new RCONChannel()
+                    {
+                        instance = Context.WebSocket
+                    };
                     msg.Author = us;
                     if (console.Length >= Program.botSettings.defaultPrefix.Length)
                     {
@@ -70,11 +95,48 @@ namespace HideriDotNet
                             cmd = cmd.Substring(Program.botSettings.defaultPrefix.Length);
                             if (Program.commands.ContainsKey(cmd))
                             {
-                                Program.commands[cmd].Run(Program.commands[cmd].splitArgs(console), msg);
+                                try
+                                {
+                                    Program.commands[cmd].Run(Program.commands[cmd].splitArgs(console), msg);
+                                    var returnString = "";
+                                    var returnInfo = Program.commands[cmd].GetInputField(Program.commands[cmd].splitArgs(console), msg);
+                                    if (returnInfo.keepCommand)
+                                        returnString = args[0];
+                                    if (returnInfo.keepArguments.Length > 0)
+                                        returnString += " ";
+                                    foreach (var element in returnInfo.keepArguments)
+                                        returnString += element + " ";
+                                    returnString += returnInfo.suffix;
+                                    var inputPacket = new ConsolePacket();
+                                    inputPacket.packet = 3;
+                                    inputPacket.text = returnString;
+                                    Send(JsonConvert.SerializeObject(inputPacket));
+                                }
+                                catch(Exception se)
+                                {
+                                    var errorPacket = new ConsolePacket();
+                                    errorPacket.packet = 0;
+                                    errorPacket.text = "Failed to run command. Exception:" + Environment.NewLine + se.ToString();
+                                    Send(JsonConvert.SerializeObject(errorPacket));
+                                }
                             }
                             else
                             {
                                 Program.onUnknownCommand?.Invoke(msg);
+                            }
+                        }
+                        else
+                        {
+                            foreach(var element in Program.rconConnections)
+                            {
+                                if (element.Key != Context.WebSocket)
+                                {
+                                    var messagePack = new ConsolePacket();
+                                    messagePack.packet = 0;
+                                    messagePack.token = pack.token;
+                                    messagePack.text = "[RCON] " + rconuser.Username + ": " + console;
+                                    element.Key.Send(JsonConvert.SerializeObject(messagePack));
+                                }
                             }
                         }
                     }
@@ -86,9 +148,17 @@ namespace HideriDotNet
                     {
                         returnPacket.status = true;
                         returnPacket.username = RCONUsersByToken[pack.token].Username;
+                        Program.rconConnections[Context.WebSocket].logged = true;
+                        Program.rconConnections[Context.WebSocket].token = pack.token;
+                        Console.WriteLine("RCON connection from " + Context.UserEndPoint.Address.ToString()+ " logged in as "+returnPacket.username);
                     }
                     else
+                    {
                         returnPacket.status = false;
+                        Program.rconConnections[Context.WebSocket].logged = false;
+                        Program.rconConnections[Context.WebSocket].token = "";
+                        Console.WriteLine("RCON connection from " + Context.UserEndPoint.Address.ToString() + " failed to log in, used incorrect token '"+pack.token+"'");
+                    }
                     Send(JsonConvert.SerializeObject(returnPacket));
                     break;
             }
@@ -97,6 +167,7 @@ namespace HideriDotNet
     }
     public class Program
     {
+        public static Dictionary<WebSocket, RCONConnection> rconConnections = new Dictionary<WebSocket, RCONConnection>();
         public static RCONSettings rconSettings = new RCONSettings();
         public static UserWrapper ConsoleAuthor;
         public static bool Debug = false;
@@ -265,7 +336,16 @@ namespace HideriDotNet
             js.packet = 0;
             js.text = text;
             if (rconSettings.enabled)
-                wssv.WebSocketServices.Broadcast(JsonConvert.SerializeObject(js));
+            {
+                //wssv.WebSocketServices.Broadcast(JsonConvert.SerializeObject(js));
+                foreach(var element in rconConnections)
+                {
+                    if (element.Value.logged)
+                    {
+                        element.Key.Send(JsonConvert.SerializeObject(js));
+                    }
+                }
+            }
         }
         public static void ConsoleWriteLine(string text)
         {
@@ -274,7 +354,16 @@ namespace HideriDotNet
             js.packet = 0;
             js.text = text;
             if (rconSettings.enabled)
-                wssv.WebSocketServices.Broadcast(JsonConvert.SerializeObject(js));
+            {
+                //wssv.WebSocketServices.Broadcast(JsonConvert.SerializeObject(js));
+                foreach (var element in rconConnections)
+                {
+                    if (element.Value.logged)
+                    {
+                        element.Key.Send(JsonConvert.SerializeObject(js));
+                    }
+                }
+            }
         }
         public static bool LoadModule(string moduleName)
         {
@@ -417,15 +506,16 @@ namespace HideriDotNet
         {
             if (!loadedConfig)
             {
-                ConsoleAuthor = new UserWrapper(_client.CurrentUser.Username, _client.CurrentUser.Discriminator, _client.CurrentUser.Id);
+                ConsoleAuthor = new UserWrapper(_client.CurrentUser.Username, _client.CurrentUser.Discriminator, _client.CurrentUser.Id, _client.CurrentUser.GetAvatarUrl(ImageFormat.Auto,2048));
                 botSettings.defaultUsername = ConsoleAuthor.Username;
                 botSettings.defaultUserDiscriminator = ConsoleAuthor.Discriminator;
                 botSettings.defaultUserID = ConsoleAuthor.Id;
+                botSettings.defaultUserAvatar = ConsoleAuthor.AvatarURL;
                 var newSettings = JsonConvert.SerializeObject(botSettings);
                 File.WriteAllText("config.json", newSettings);
             }
             else
-                ConsoleAuthor = new UserWrapper(botSettings.defaultUsername, botSettings.defaultUserDiscriminator, botSettings.defaultUserID);
+                ConsoleAuthor = new UserWrapper(botSettings.defaultUsername, botSettings.defaultUserDiscriminator, botSettings.defaultUserID, botSettings.defaultUserAvatar);
             Console.WriteLine($"{_client.CurrentUser} is connected!");
 
             return Task.CompletedTask;
@@ -435,10 +525,12 @@ namespace HideriDotNet
         // reading over the Commands Framework sample.
         private async Task MessageReceivedAsync(SocketMessage message)
         {
-            // The bot should never respond to itself.
-            if (message.Author.Id == _client.CurrentUser.Id)
-                return;
             onMessage?.Invoke(new MessageWrapper(message));
+            if (!botSettings.selfCommands)
+            {
+                if (message.Author.Id == _client.CurrentUser.Id)
+                    return;
+            }
             if (message.Content.Length < botSettings.defaultPrefix.Length)
                 return;
             var args = message.Content.Split(' ');
