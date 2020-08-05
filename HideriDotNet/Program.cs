@@ -127,7 +127,11 @@ namespace HideriDotNet
                         }
                         else
                         {
-                            foreach(var element in Program.rconConnections)
+                            var inputPacket = new ConsolePacket();
+                            inputPacket.packet = 3;
+                            inputPacket.text = "";
+                            Send(JsonConvert.SerializeObject(inputPacket));
+                            foreach (var element in Program.rconConnections)
                             {
                                 if (element.Key != Context.WebSocket)
                                 {
