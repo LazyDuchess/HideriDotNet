@@ -55,6 +55,7 @@ namespace HideriDotNet
         {
             this.message = message;
             this.Channel = new ChannelWrapper(message.Channel);
+            this.Author = new UserWrapper(message.Author);
         }
     }
 }
